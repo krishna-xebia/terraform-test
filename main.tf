@@ -47,87 +47,13 @@ resource "aws_codepipeline" "test-dev" {
       output_artifacts = ["BuildArtifact"]
 
       configuration = {
-        ProjectName = "test-tf-codebuild"
+        ProjectName = "aws_codebuild_project.stunpeer-cd[0].name"
       }
     }
   }
 
-  stage {
-    name = "Deploy"
-
-    action {
-      name             = "PlanInfra_USE1"
-      category         = "Build"
-      owner            = "AWS"
-      provider         = "CodeBuild"
-      version          = "1"
-      input_artifacts  = ["BuildArtifact"]
-      output_artifacts = ["InfraArtifact"]
-      run_order        = 1
-
-      configuration = {
-        ProjectName = "test-tf-codebuild"
-      }
-    }
-
-    action {
-      name            = "DeployInfra_USE1"
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      input_artifacts = ["InfraArtifact"]
-      run_order       = 2
-
-      configuration = {
-        ProjectName = "test-tf-codebuild"
-      }
-    }
-
-    action {
-      name            = "DeployApp_USE1"
-      category        = "Build"
-      owner           = "AWS"
-      provider        = "CodeBuild"
-      version         = "1"
-      input_artifacts = ["InfraArtifact"]
-      run_order       = 3
-
-      configuration = {
-        ProjectName = aws_codebuild_project.deploy-app-dev[0].name
-      }
-    }
-  }
-
-  stage {
-    name = "PromoteToQA"
-
-    action {
-      name      = "ManualApproval"
-      category  = "Approval"
-      owner     = "AWS"
-      provider  = "Manual"
-      version   = "1"
-      run_order = 1
-    }
-
-    action {
-      name            = "CopyArtifactToQA"
-      category        = "Deploy"
-      owner           = "AWS"
-      provider        = "S3"
-      version         = "1"
-      input_artifacts = ["InfraArtifact"]
-      run_order       = 2
-
-      configuration = {
-        BucketName = var.s3_bucket["qa"]
-        Extract    = "false"
-        ObjectKey  = "${local.name}/PromotedBuild.zip"
-      }
-    }
-  }
 }
+
 
 
 
@@ -177,46 +103,20 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
   role = "${aws_iam_role.codepipeline_role.id}"
 
   policy = <<EOF
+
 {
     "Version": "2012-10-17",
     "Statement": [
         {
             "Effect": "Allow",
-            "Resource": "*",
-            "Action": [
-                "logs:CreateLogGroup",
-                "logs:CreateLogStream",
-                "logs:PutLogEvents"
-            ]
-        },
-        {
-            "Effect": "Allow",
-            "Resource": [
-                "arn:aws:s3:::codepipeline-us-east-1-*"
-            ],
-            "Action": [
-                "s3:PutObject",
-                "s3:GetObject",
-                "s3:GetObjectVersion",
-                "s3:GetBucketAcl",
-                "s3:GetBucketLocation"
-            ]
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
-                "codebuild:CreateReportGroup",
-                "codebuild:CreateReport",
-                "codebuild:UpdateReport",
-                "codebuild:BatchPutTestCases"
-            ],
-            "Resource": [
-                "arn:aws:codebuild:us-east-1:443147798423:report-group/demo-*"
-            ]
+            "Action": "*",
+            "Resource": "*"
         }
     ]
 }
+
 EOF
 }
+
 
 
