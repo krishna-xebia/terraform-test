@@ -20,7 +20,7 @@ resource "aws_codebuild_project" "stunpeer-cd" {
 
   environment {
     compute_type    = "BUILD_GENERAL1_LARGE"
-    image           = "hashicorp/terraform:${local.terraform_version}"
+    image           = "hashicorp/terraform:0.12"
     type            = "LINUX_CONTAINER"
     privileged_mode = "true"
 
