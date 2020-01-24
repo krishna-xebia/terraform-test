@@ -97,13 +97,11 @@ resource "aws_iam_role" "codepipeline_role" {
 }
 EOF
 }
-
 resource "aws_iam_role_policy" "codepipeline_policy" {
   name = "codepipeline_policy"
   role = "${aws_iam_role.codepipeline_role.id}"
 
   policy = <<EOF
-
 {
     "Version": "2012-10-17",
     "Statement": [
@@ -114,9 +112,29 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
         }
     ]
 }
-
 EOF
 }
 
+#resource "aws_iam_role_policy_attachment" "test-attach" {
+#  role       = "${aws_iam_role.codebuild_role.name}"
+#  policy_arn = "${aws_iam_policy.codepipeline_policy.arn}"
+#}
 
 
+resource "aws_iam_role_policy" "codebuild_policy" {
+  name = "codebuild_policy"
+  role = "${aws_iam_role.codebuild_role.id}"
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "*",
+            "Resource": "*"
+        }
+    ]
+}
+EOF
+}

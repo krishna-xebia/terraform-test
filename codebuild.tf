@@ -1,5 +1,4 @@
-
-#############################################
+############################################
 ##  Codebuild - Build Environment - "dev"  ##
 #############################################
 
@@ -7,15 +6,11 @@ resource "aws_codebuild_project" "stunpeer-cd" {
   name          = "stunpeer-cd"
   description   = "stunpeer"
   build_timeout = "30"
-  service_role  = aws_iam_role.codepipeline_role.arn
-  badge_enabled = "true"
+  service_role  = aws_iam_role.codebuild_role.arn
 
   source {
-    type                = "GITHUB"
-    location            = "https://github.com/krishna-xebia/terraform-test.git"
-    git_clone_depth     = 0
-    buildspec           = "buildspec-build.yml"
-    report_build_status = "true"
+    type      = "CODEPIPELINE"
+    buildspec = "buildspec-plan-infra.yml"
   }
 
   environment {
@@ -34,11 +29,6 @@ resource "aws_codebuild_project" "stunpeer-cd" {
     }
   }
 
-  source {
-    type      = "CODEPIPELINE"
-    buildspec = "devops/buildspec-plan-infra.yml"
-  }
-
   artifacts {
     type = "CODEPIPELINE"
   }
@@ -47,4 +37,26 @@ resource "aws_codebuild_project" "stunpeer-cd" {
     type  = "LOCAL"
     modes = ["LOCAL_DOCKER_LAYER_CACHE", "LOCAL_SOURCE_CACHE"]
   }
+}
+
+
+####IAM Role
+
+resource "aws_iam_role" "codebuild_role" {
+  name = "test-codebuild-role"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "codebuild.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
 }
